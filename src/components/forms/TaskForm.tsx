@@ -1,6 +1,7 @@
 'use client'
-
-import React from 'react'
+import { TASK_CATEGORIES, PRIORITY_OPTIONS, DURATION_PRESETS } from '@/lib/taskCategories'
+import { TASK_TEMPLATES, TaskTemplate } from '@/lib/taskTemplates'
+import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
@@ -17,6 +18,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTaskStore } from '@/stores/taskStore'
+import { Badge } from '@/components/ui/badge'
 
 // Form validation schema
 const taskSchema = z.object({
@@ -36,6 +38,8 @@ interface TaskFormProps {
 
 export default function TaskForm({ onClose }: TaskFormProps) {
   const addTask = useTaskStore((state) => state.addTask)
+  const [selectedTemplate, setSelectedTemplate] = useState<TaskTemplate | null>(null)
+  const [showTemplates, setShowTemplates] = useState(false)
 
   const {
     register,
@@ -51,6 +55,16 @@ export default function TaskForm({ onClose }: TaskFormProps) {
       estimatedDuration: 30,
     }
   })
+
+  const applyTemplate = (template: TaskTemplate) => {
+    setValue('title', template.title)
+    setValue('description', template.description || '')
+    setValue('category', template.category)
+    setValue('priority', template.priority)
+    setValue('estimatedDuration', template.estimatedDuration)
+    setSelectedTemplate(template)
+    setShowTemplates(false)
+  }
 
   const onSubmit = async (data: TaskFormData) => {
     try {
@@ -78,7 +92,56 @@ export default function TaskForm({ onClose }: TaskFormProps) {
         <CardTitle>Create New Task</CardTitle>
       </CardHeader>
       <CardContent>
+        {showTemplates && (
+          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-medium text-gray-900">Quick Templates</h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowTemplates(false)}
+              >
+                ✕
+              </Button>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {TASK_TEMPLATES.map((template) => (
+                <Button
+                  key={template.id}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="justify-start text-left h-auto p-3"
+                  onClick={() => applyTemplate(template)}
+                >
+                  <div>
+                    <div className="font-medium">{template.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {template.category} • {template.estimatedDuration}min
+                    </div>
+                  </div>
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          {/* Template Selection */}
+          <div className="flex justify-between items-center">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowTemplates(!showTemplates)}
+            >
+              📋 Use Template
+            </Button>
+            {selectedTemplate && (
+              <Badge variant="secondary">Using: {selectedTemplate.name}</Badge>
+            )}
+          </div>
+
           {/* Title Field */}
           <div className="space-y-2">
             <Label htmlFor="title">Task Title *</Label>
