@@ -1,28 +1,15 @@
-// src/components/gtd/ContextFilter.tsx
 import React, { useState, useMemo } from 'react';
-import { Task } from '@/types/priority';
+import { GTDTask } from '@/types/task';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Checkbox, type CheckedState } from '@/components/ui/checkbox';
-import { 
-  Smartphone, 
-  Monitor, 
-  Building2, 
-  Home, 
-  Car, 
-  Users, 
-  Clock, 
-  Filter,
-  Search,
-  MapPin,
-  Zap
-} from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Smartphone, Monitor, Building2, Home, Car, Users, Clock, Filter, Search, MapPin, Zap } from 'lucide-react';
 
 interface ContextFilterProps {
-  tasks: Task[];
-  onTaskUpdate: (taskId: string, updates: Partial<Task>) => void;
+  tasks: GTDTask[];
+  onTaskUpdate: (taskId: string, updates: Partial<GTDTask>) => void;
   onTaskComplete: (taskId: string) => void;
 }
 
@@ -30,7 +17,7 @@ interface ContextGroup {
   name: string;
   icon: React.ComponentType<any>;
   color: string;
-  tasks: Task[];
+  tasks: GTDTask[];
   totalTime: number;
 }
 
@@ -68,7 +55,7 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
   const [selectedContext, setSelectedContext] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [showOnlyNextActions, setShowOnlyNextActions] = useState<boolean>(true);
-      const [energyLevel, setEnergyLevel] = useState<'high' | 'medium' | 'low' | 'any'>('any');
+  const [energyLevel, setEnergyLevel] = useState<'high' | 'medium' | 'low' | 'any'>('any');
   const [timeAvailable, setTimeAvailable] = useState<number>(60);
 
   const contextGroups = useMemo(() => {
@@ -101,10 +88,7 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
     // Filter by energy level
     if (energyLevel !== 'any') {
       Object.keys(groups).forEach(context => {
-        groups[context].tasks = groups[context].tasks.filter(task => {
-          const taskEnergy = getTaskEnergyLevel(task);
-          return taskEnergy === energyLevel;
-        });
+        groups[context].tasks = groups[context].tasks.filter(task => task.energy === energyLevel);
         groups[context].totalTime = groups[context].tasks.reduce(
           (total, task) => total + (task.estimatedDuration || 30), 0
         );
@@ -115,6 +99,9 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
     Object.keys(groups).forEach(context => {
       groups[context].tasks = groups[context].tasks.filter(
         task => (task.estimatedDuration || 30) <= timeAvailable
+      );
+      groups[context].totalTime = groups[context].tasks.reduce(
+        (total, task) => total + (task.estimatedDuration || 30), 0
       );
     });
 
@@ -127,24 +114,6 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
 
     return groups;
   }, [tasks, searchTerm, showOnlyNextActions, energyLevel, timeAvailable]);
-
-  const getTaskEnergyLevel = (task: Task): 'high' | 'medium' | 'low' => {
-    if (task.context?.includes('energy-high')) return 'high';
-    if (task.context?.includes('energy-low')) return 'low';
-    
-    // Determine energy based on task characteristics
-    const duration = task.estimatedDuration || 30;
-    const isCreative = task.title.toLowerCase().includes('create') || 
-                      task.title.toLowerCase().includes('design') ||
-                      task.title.toLowerCase().includes('write');
-    const isRoutine = task.title.toLowerCase().includes('review') ||
-                     task.title.toLowerCase().includes('organize') ||
-                     task.title.toLowerCase().includes('file');
-
-    if (isCreative || duration > 120) return 'high';
-    if (isRoutine || duration < 15) return 'low';
-    return 'medium';
-  };
 
   const getTasksByTime = (minutes: number) => {
     const allTasks = Object.values(contextGroups).flatMap(group => group.tasks);
@@ -172,7 +141,6 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
@@ -182,21 +150,18 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
                 className="pl-10"
               />
             </div>
-
-            {/* Quick Filters */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Show Only</label>
                 <div className="flex items-center space-x-2">
-                <Checkbox
-  id="next-actions"
-  checked={showOnlyNextActions}
-  onCheckedChange={(checked) => setShowOnlyNextActions(!!checked)}
-/>
+                  <Checkbox
+                    id="next-actions"
+                    checked={showOnlyNextActions}
+                    onCheckedChange={(checked) => setShowOnlyNextActions(!!checked)}
+                  />
                   <label htmlFor="next-actions" className="text-sm">Next Actions</label>
                 </div>
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Energy Level</label>
                 <select
@@ -210,7 +175,6 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
                   <option value="low">Low Energy</option>
                 </select>
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Time Available</label>
                 <select
@@ -225,7 +189,6 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
                   <option value={999}>Any duration</option>
                 </select>
               </div>
-
               <div className="space-y-2">
                 <label className="text-sm font-medium">Quick Actions</label>
                 <div className="space-y-1">
@@ -276,8 +239,6 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
               );
             })}
           </div>
-
-          {/* Quick Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-3 bg-blue-50 rounded-lg">
               <div className="text-lg font-bold text-blue-600">{getTasksByTime(15).length}</div>
@@ -346,12 +307,12 @@ export const ContextFilter: React.FC<ContextFilterProps> = ({
                           </Badge>
                         )}
                         <Badge variant="outline" className="text-xs">
-                          {getTaskEnergyLevel(task)} energy
+                          {task.energy} energy
                         </Badge>
                       </div>
-                      {task.project && (
+                      {task.projectId && (
                         <div className="text-xs text-gray-500 mt-1">
-                          Project: {task.project}
+                          Project: {task.projectId}
                         </div>
                       )}
                     </div>

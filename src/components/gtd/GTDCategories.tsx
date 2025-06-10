@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { GTDCategory, GTDCategoryConfig, GTDStats } from '@/types/gtd';
 import { Task } from '@/types/task';
+import { GTDTask } from '@/types/task';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -18,11 +19,11 @@ import {
 } from 'lucide-react';
 
 interface GTDCategoriesProps {
-  tasks: Task[];
-  onCategorySelect: (category: GTDCategory) => void;
-  selectedCategory?: GTDCategory;
-  onTaskMove: (taskId: string, newCategory: GTDCategory) => void;
-}
+    tasks: GTDTask[];
+    onCategorySelect: (category: GTDCategory) => void;
+    selectedCategory?: GTDCategory;
+    onTaskMove: (taskId: string, newCategory: GTDTask['gtdCategory']) => void;
+  }
 
 const GTD_CATEGORIES: GTDCategoryConfig[] = [
   {
@@ -70,12 +71,17 @@ const GTD_CATEGORIES: GTDCategoryConfig[] = [
   }
 ];
 
-export const GTDCategories: React.FC<GTDCategoriesProps> = ({
-  tasks,
-  onCategorySelect,
-  selectedCategory,
-  onTaskMove
-}) => {
+export const GTDCategories: React.FC<{
+    tasks: GTDTask[];
+    onCategorySelect: (category: GTDCategory) => void;
+    selectedCategory?: GTDCategory;
+    onTaskMove: (taskId: string, newCategory: GTDCategory) => void;
+  }> = ({
+    tasks,
+    onCategorySelect,
+    selectedCategory,
+    onTaskMove,
+  }) =>  {
   const categoryStats = useMemo(() => {
     const stats: Record<GTDCategory, GTDStats> = {} as Record<GTDCategory, GTDStats>;
     

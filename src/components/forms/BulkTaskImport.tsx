@@ -55,18 +55,21 @@ export default function BulkTaskImport({ onClose }: { onClose?: () => void }) {
         }
 
         addTask({
-          title,
-          description: '',
-          category,
-          priority,
-          estimatedDuration: duration,
-          dependencies: [],
-          status: 'inbox',
-          gtdCategory: 'inbox',
-          isUrgent: false,
-          isImportant: false,
-          energy: 'medium',
-        })
+            title,
+            description: '',
+            category,
+            priority,
+            estimatedDuration: duration,
+            dependencies: [],
+            status: 'inbox',
+            gtdCategory: 'inbox',
+            isUrgent: false,
+            isImportant: false,
+            energy: 'medium',
+            isHighImpact: false,
+            importance: 0,
+            estimatedImpact: 0,
+          })
         
         successCount++
       } catch (error) {

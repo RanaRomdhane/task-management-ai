@@ -43,6 +43,8 @@ export const WeeklyReview: React.FC<WeeklyReviewProps> = ({ tasks, onReviewCompl
     { id: 'reflection-improve', title: 'Areas to Improve', description: 'Identify what could be better', completed: false, category: 'reflection' }
   ]);
 
+
+  
   const reviewStats = useMemo(() => {
     const stats = {
       inbox: tasks.filter(t => t.status === 'inbox').length,

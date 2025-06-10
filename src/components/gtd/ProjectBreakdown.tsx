@@ -7,11 +7,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Target, ArrowRight, Trash2, Lightbulb, Clock, CheckCircle } from 'lucide-react';
+import { GTDTask } from '@/types/task';
 
 interface ProjectBreakdownProps {
   project: string;
-  tasks: Task[];
-  onAddNextAction: (action: Partial<Task>) => void;
+  tasks: GTDTask[];
+  onAddNextAction: (action: Partial<GTDTask>) => void;
   onProjectUpdate: (projectName: string, updates: any) => void;
 }
 
@@ -36,7 +37,7 @@ export const ProjectBreakdown: React.FC<ProjectBreakdownProps> = ({
   const [projectOutcome, setProjectOutcome] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const projectTasks = tasks.filter(task => task.project === project);
+  const projectTasks = tasks.filter(task => task.projectId === project);
   const nextActions = projectTasks.filter(task => task.status === 'next-action');
   const completedActions = projectTasks.filter(task => task.status === 'completed');
   
@@ -49,7 +50,7 @@ export const ProjectBreakdown: React.FC<ProjectBreakdownProps> = ({
       title: newAction.title,
       context: newAction.context,
       estimatedDuration: newAction.estimatedDuration || 30,
-      project: project,
+      projectId: project,
       status: 'next-action',
       priority: 'medium',
       category: 'action',

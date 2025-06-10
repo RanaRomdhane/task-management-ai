@@ -55,22 +55,24 @@ export default function TaskForm({ onClose }: TaskFormProps) {
 
   const onSubmit = async (data: TaskFormData) => {
     try {
-      addTask({
-        title: data.title,
-        description: data.description || '',
-        priority: data.priority,
-        category: data.category,
-        estimatedDuration: data.estimatedDuration,
-        deadline: data.deadline ? new Date(data.deadline) : undefined,
-        dependencies: [],
-        status: 'inbox',
-        // GTDTask specific properties
-        gtdCategory: 'inbox', // Default to inbox for new tasks
-        isUrgent: data.priority === 'high', // Consider high priority as urgent
-        isImportant: data.priority === 'high' || data.priority === 'medium', // High/medium as important
-        energy: 'medium', // Default energy level
-        
-      });
+        addTask({
+            title: data.title,
+            description: data.description || '',
+            priority: data.priority,
+            category: data.category,
+            estimatedDuration: data.estimatedDuration,
+            deadline: data.deadline ? new Date(data.deadline) : undefined,
+            dependencies: [],
+            status: 'inbox',
+            // GTDTask specific properties
+            gtdCategory: 'inbox', // Default to inbox for new tasks
+            isUrgent: data.priority === 'high', // Consider high priority as urgent
+            isImportant: data.priority === 'high' || data.priority === 'medium', // High/medium as important
+            energy: 'medium', // Default energy level
+            isHighImpact: false, // Add this property
+            importance: 0, // Add this property
+            estimatedImpact: 0, // Add this property
+          });
       
       reset();
       onClose?.();

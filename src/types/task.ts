@@ -40,7 +40,7 @@ export type GTDCategory = 'inbox' | 'next-action' | 'waiting' | 'project' | 'som
 export type EisenhowerQuadrant = 'urgent-important' | 'important-not-urgent' | 'urgent-not-important' | 'not-urgent-not-important';
 
 export interface GTDTask extends Task {
-  gtdCategory: GTDCategory;
+  gtdCategory: string | GTDCategory | undefined;
   eisenhowerQuadrant?: EisenhowerQuadrant;
   isUrgent: boolean;
   isImportant: boolean;
@@ -48,6 +48,9 @@ export interface GTDTask extends Task {
   energy: 'high' | 'medium' | 'low'; // energy required
   waitingFor?: string; // who/what you're waiting for
   projectId?: string; // if this task belongs to a project
+  isHighImpact : boolean
+  importance: number;
+  estimatedImpact: number;
 }
 
 export interface GTDProject {
@@ -60,6 +63,7 @@ export interface GTDProject {
   status: 'active' | 'on-hold' | 'completed';
   createdAt: Date;
   updatedAt: Date;
+  isHighImpact : boolean
 }
 
 export interface WeeklyReview {
