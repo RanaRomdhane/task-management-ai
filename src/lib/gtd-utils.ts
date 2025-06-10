@@ -16,52 +16,60 @@ export function categorizeByEisenhower(task: GTDTask): EisenhowerQuadrant {
 }
 
 export function calculateTaskPriority(task: GTDTask): number {
-  let score = 0;
+    let score = 0;
   
-  // Deadline proximity (40% weight)
-  if (task.deadline) {
-    const now = new Date();
-    const daysUntilDeadline = Math.ceil(
-      (task.deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    
-    if (daysUntilDeadline <= 1) {
-      score += 40; // Due today or overdue
-    } else if (daysUntilDeadline <= 3) {
-      score += 30; // Due within 3 days
-    } else if (daysUntilDeadline <= 7) {
-      score += 20; // Due within a week
-    } else if (daysUntilDeadline <= 14) {
-      score += 10; // Due within 2 weeks
+    // Ensure task has required properties
+    if (!task) return 0;
+    task.isUrgent = task.isUrgent ?? false;
+    task.isImportant = task.isImportant ?? false;
+    task.dependencies = task.dependencies ?? [];
+    task.energy = task.energy ?? 'medium'; // Default to medium if undefined
+  
+    // Deadline proximity (40% weight)
+    if (task.deadline) {
+      const deadlineDate = task.deadline instanceof Date ? task.deadline : new Date(task.deadline);
+      if (!isNaN(deadlineDate.getTime())) {
+        const now = new Date();
+        const daysUntilDeadline = Math.ceil(
+          (deadlineDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        if (daysUntilDeadline <= 1) {
+          score += 40;
+        } else if (daysUntilDeadline <= 3) {
+          score += 30;
+        } else if (daysUntilDeadline <= 7) {
+          score += 20;
+        } else if (daysUntilDeadline <= 14) {
+          score += 10;
+        }
+      }
     }
+  
+    // Eisenhower Matrix (30% weight)
+    const quadrantScores = {
+      'urgent-important': 30,
+      'important-not-urgent': 20,
+      'urgent-not-important': 15,
+      'not-urgent-not-important': 5
+    };
+    const quadrant = categorizeByEisenhower(task);
+    score += quadrantScores[quadrant] ?? 5; // Default to lowest score if quadrant is invalid
+  
+    // Dependencies (20% weight)
+    score += Math.min(task.dependencies.length * 5, 20);
+  
+    // Energy vs Time of Day (10% weight)
+    const currentHour = new Date().getHours();
+    if (task.energy === 'high' && currentHour >= 9 && currentHour <= 11) {
+      score += 10;
+    } else if (task.energy === 'low' && (currentHour >= 14 && currentHour <= 16)) {
+      score += 8;
+    } else if (task.energy === 'medium') {
+      score += 6;
+    }
+  
+    return Math.min(score, 100);
   }
-  
-  // Eisenhower Matrix (30% weight)
-  const quadrantScores = {
-    'urgent-important': 30,
-    'important-not-urgent': 20,
-    'urgent-not-important': 15,
-    'not-urgent-not-important': 5
-  };
-  
-  const quadrant = categorizeByEisenhower(task);
-  score += quadrantScores[quadrant];
-  
-  // Dependencies (20% weight)
-  score += Math.min(task.dependencies.length * 5, 20);
-  
-  // Energy vs Time of Day (10% weight)
-  const currentHour = new Date().getHours();
-  if (task.energy === 'high' && currentHour >= 9 && currentHour <= 11) {
-    score += 10; // High energy tasks in morning
-  } else if (task.energy === 'low' && (currentHour >= 14 && currentHour <= 16)) {
-    score += 8; // Low energy tasks in afternoon
-  } else if (task.energy === 'medium') {
-    score += 6; // Medium energy tasks anytime
-  }
-  
-  return Math.min(score, 100); // Cap at 100
-}
 
 export function shouldMoveToNextAction(task: GTDTask): boolean {
   // Task should move from inbox to next-action if:
