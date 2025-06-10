@@ -1,60 +1,35 @@
-import { create } from 'zustand'
-import { Task, TaskBatch } from '@/types/task'
+import { GTDTask, TaskBatch, GTDProject, WeeklyReview } from '@/types/task';
 
-interface TaskStore {
-  tasks: Task[]
-  batches: TaskBatch[]
+export interface TaskStore {
+  tasks: GTDTask[];
+  batches: TaskBatch[];
+  projects: GTDProject[];
+  weeklyReviews: WeeklyReview[];
   
-  // Actions
-  addTask: (task: Omit<Task, 'id' | 'createdAt' | 'updatedAt'>) => void
-  updateTask: (id: string, updates: Partial<Task>) => void
-  deleteTask: (id: string) => void
+  // Task actions
+  addTask: (task: Omit<GTDTask, 'id' | 'createdAt' | 'updatedAt' | 'eisenhowerQuadrant'>) => void;
+  updateTask: (id: string, updates: Partial<GTDTask>) => void;
+  deleteTask: (id: string) => void;
+  processInboxTask: (id: string) => void;
+  moveTaskToCategory: (id: string, category: GTDTask['gtdCategory']) => void;
   
-  addBatch: (batch: Omit<TaskBatch, 'id' | 'createdAt'>) => void
-  updateBatch: (id: string, updates: Partial<TaskBatch>) => void
-  deleteBatch: (id: string) => void
+  // Project actions
+  addProject: (project: Omit<GTDProject, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  updateProject: (id: string, updates: Partial<GTDProject>) => void;
+  
+  // GTD-specific actions
+  getTasksByCategory: (category: GTDTask['gtdCategory']) => GTDTask[];
+  getTasksByQuadrant: (quadrant: GTDTask['eisenhowerQuadrant']) => GTDTask[];
+  getHighPriorityTasks: () => GTDTask[];
+  getTasksByContext: (context: string) => GTDTask[];
+  getTasksByEnergy: (energy: 'high' | 'medium' | 'low') => GTDTask[];
+  
+  // Weekly review
+  createWeeklyReview: (review: Omit<WeeklyReview, 'id'>) => void;
+  
+  // Utility functions
+  getInboxCount: () => number;
+  getNextActionCount: () => number;
+  getWaitingCount: () => number;
 }
 
-export const useTaskStore = create<TaskStore>((set) => ({
-  tasks: [],
-  batches: [],
-  
-  addTask: (taskData) => set((state) => ({
-    tasks: [...state.tasks, {
-      ...taskData,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }]
-  })),
-  
-  updateTask: (id, updates) => set((state) => ({
-    tasks: state.tasks.map(task => 
-      task.id === id 
-        ? { ...task, ...updates, updatedAt: new Date() }
-        : task
-    )
-  })),
-  
-  deleteTask: (id) => set((state) => ({
-    tasks: state.tasks.filter(task => task.id !== id)
-  })),
-  
-  addBatch: (batchData) => set((state) => ({
-    batches: [...state.batches, {
-      ...batchData,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-    }]
-  })),
-  
-  updateBatch: (id, updates) => set((state) => ({
-    batches: state.batches.map(batch => 
-      batch.id === id ? { ...batch, ...updates } : batch
-    )
-  })),
-  
-  deleteBatch: (id) => set((state) => ({
-    batches: state.batches.filter(batch => batch.id !== id)
-  })),
-}))

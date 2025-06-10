@@ -7,7 +7,7 @@ import TaskForm from '@/components/forms/TaskForm'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { useTaskStore } from '@/stores/taskStore'
+import { useTaskStore } from '@/lib/utils'
 import { Plus, Clock, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
 

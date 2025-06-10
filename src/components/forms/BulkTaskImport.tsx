@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { useTaskStore } from '@/stores/taskStore'
+import { useTaskStore } from '@/lib/utils'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function BulkTaskImport({ onClose }: { onClose?: () => void }) {
@@ -23,7 +23,7 @@ export default function BulkTaskImport({ onClose }: { onClose?: () => void }) {
       try {
         // Support different formats:
         // "Task title"
-        "Task title | category | priority | duration"
+        // "Task title | category | priority | duration"
         // "Task title, category, priority, duration"
         
         const parts = line.includes('|') 
@@ -42,18 +42,35 @@ export default function BulkTaskImport({ onClose }: { onClose?: () => void }) {
         const priority = (parts[2] as 'high' | 'medium' | 'low') || 'medium'
         const duration = parseInt(parts[3]) || 30
 
+        // Validate priority
+        if (!['high', 'medium', 'low'].includes(priority)) {
+          errors.push(`Line ${index + 1}: Invalid priority '${priority}'. Use: high, medium, or low`)
+          return
+        }
+
+        // Validate duration
+        if (isNaN(duration) || duration < 5 || duration > 480) {
+          errors.push(`Line ${index + 1}: Invalid duration '${duration}'. Must be between 5-480 minutes`)
+          return
+        }
+
         addTask({
           title,
+          description: '',
           category,
           priority,
           estimatedDuration: duration,
           dependencies: [],
           status: 'inbox',
+          gtdCategory: 'inbox',
+          isUrgent: false,
+          isImportant: false,
+          energy: 'medium',
         })
         
         successCount++
       } catch (error) {
-        errors.push(`Line ${index + 1}: ${error}`)
+        errors.push(`Line ${index + 1}: ${error instanceof Error ? error.message : 'Unknown error'}`)
       }
     })
 
@@ -81,6 +98,8 @@ export default function BulkTaskImport({ onClose }: { onClose?: () => void }) {
             <div>• Simple: "Task title"</div>
             <div>• With details: "Task title | category | priority | duration"</div>
             <div>• CSV format: "Task title, work, high, 60"</div>
+            <div>• Priority: high, medium, low</div>
+            <div>• Duration: 5-480 minutes</div>
           </div>
         </div>
 
